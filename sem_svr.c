@@ -31,6 +31,7 @@ char buf_copy[BUFFER_LEN]; /* Copia Buffer de recepción que se modificara para
 char op[1];
 char id[20];
 char idTicket[4];
+char capEst[4];
 time_t tiempo;
 struct tm *tlocal;
 char FechaHora[128];
@@ -53,11 +54,11 @@ my_addr.sin_addr.s_addr = INADDR_ANY; /* escuchamos en todas las IPs */
 bzero(&(my_addr.sin_zero), 8); /* rellena con ceros el resto de la estructura */
 /* Se le da un nombre al socket (se lo asocia al puerto e IPs) */ 
 printf("Asignado direccion al socket ....\n");
-if (bind(sockfd, (struct sockaddr *)&my_addr, sizeof(struct sockaddr)) == -1) {
+if (bind(sockfd, (struct sockaddr *)&my_addr, sizeof(struct sockaddr)) < 0) {
 perror("bind");
 exit(2); }
 ///////////////////////////////////////////////////////////////
-
+listen(sockfd,10);
 //Servidor se queda activo esperando que alguien se comunique con el
 while(1){
 	/* Se reciben los datos (directamente, UDP no necesita conexión) */
@@ -98,11 +99,14 @@ if (strcmp(op,"e") == 0)
 	  sprintf(idTicket, "%d", ids_vehiculos[i]);
 	  ids_vehiculos[i] = (i+1)*-1;
 	  CAP_EST--;
+	  sprintf(capEst, "Puestos Disponibles: %d", CAP_EST);
 
 	  //Se carga mensaje a buffer:
 		strcat(buf,FechaHora);// Si el vehiculo entrara o saldra
 		strcat(buf," ");//separador
 		strcat(buf,idTicket);// Id del vehiculo
+		strcat(buf, "\n");
+		strcat(buf, capEst);
 		strcat(buf,"\n");//fin del buffer	  		
 
 	}
@@ -112,7 +116,10 @@ if (strcmp(op,"e") == 0)
 }
 else{// hay q Verificar si alguien quiere salir pero hay full cap
 	CAP_EST++;
-	strcat(buf,"Hasta luego");
+	sprintf(capEst, "Puestos Disponibles: %d", CAP_EST);
+	strcat(buf, capEst);
+	strcat(buf," ");
+	strcat(buf,"Hasta luego \n");
 }
 
 if ((numbytes=sendto(sockfd,buf,strlen(buf),0,(struct sockaddr *)&their_addr, sizeof(struct sockaddr))) == -1) {

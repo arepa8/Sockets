@@ -66,13 +66,21 @@ exit(1); }
 
 portnum = atoi(argv[4]);
 /* Creamos el socket */
-if ((sockfd = socket(AF_INET, SOCK_DGRAM, 0)) == -1) {
+if ((sockfd = socket(AF_INET, SOCK_DGRAM, 0)) < 0) {
 perror("socket");
-exit(2); }
+exit(1); }
 /* a donde mandar */
 svr_addr.sin_family = AF_INET; /* usa host byte order */ 
 svr_addr.sin_port = htons(portnum); /* usa network byte order */ 
-svr_addr.sin_addr = *((struct in_addr *)host_name->h_addr); bzero(&(svr_addr.sin_zero), 8); /* pone en cero el resto */
+//svr_addr.sin_addr = *((struct in_addr *)host_name->h_addr); 
+bcopy((char *)host_name->h_addr, 
+    (char *)&svr_addr.sin_addr.s_addr,  
+    host_name->h_length);
+bzero(&(svr_addr.sin_zero), 8); /* pone en cero el resto */
+
+//Esto aqui intenta conectarse al servidor, si el servidor esta disponible funciona pepa
+if (connect(sockfd,(struct sockaddr *)&svr_addr,sizeof(svr_addr)) < 0) 
+    error("ERROR connecting");
 
 
 /* enviamos info al servidor en el buffer*/
@@ -82,14 +90,14 @@ strcat(buf," ");//separador
 strcat(buf,(argv[8]));// Id del vehiculo
 strcat(buf,"\n");//fin del buffer
 
-if ((numbytes = sendto(sockfd,buf,strlen(buf),0,(struct sockaddr *)&svr_addr, sizeof(struct sockaddr))) == -1) {
+if ((numbytes = sendto(sockfd,buf,strlen(buf),0,(struct sockaddr *)&svr_addr, sizeof(struct sockaddr))) < 0) {
 perror("sendto");
-exit(2); }
+exit(1); }
 
 memset(buf,'\0', BUFFER_LEN);//Se borra el buffer por si acaso habia algo antes q' fastidie
 
 /* recibimos respuesta del servidor*/
-if ((numbytes = recvfrom(sockfd, buf, BUFFER_LEN, 0, (struct sockaddr *)&svr_addr,(socklen_t *)&addr_len)) == -1) { 
+if ((numbytes = recvfrom(sockfd, buf, BUFFER_LEN, 0, (struct sockaddr *)&svr_addr,(socklen_t *)&addr_len)) < 0) { 
 perror("recvfrom");
 exit(2);}
 
