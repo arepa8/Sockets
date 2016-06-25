@@ -14,11 +14,36 @@
 #include <stdio.h>
 #include <time.h>
 
+typedef struct
+{
+  char placa[10];
+  int id_ticket;
+  time_t hora_entrada;
+}carro;
+
 #define SERVER_PORT 20539 //Puerto a usar, esto habra q cambiarlo
 #define BUFFER_LEN 1024 //longitud del buffer de lectura
 int CAP_EST = 10;//Capacidad del estacionamiento
-int ids_vehiculos[200];
+carro tickets[200];
 
+
+void init(){
+	int i;
+	for ( i = 0; i < 200; ++i)
+	{
+		strcpy(tickets[i].placa,"$");
+		tickets[i].id_ticket = i;
+		printf("Tiquet: %d Placa: %s \n",tickets[i].id_ticket,tickets[i].placa);
+	}
+}
+
+void imprimirTickets(){
+	int i;
+	for ( i = 0; i < 200; ++i)
+	{
+		printf("Tiquet: %d Placa: %s \n",tickets[i].id_ticket,tickets[i].placa);
+	}
+}
 
 int main(int argc, char *argv[]) {
 
@@ -35,12 +60,12 @@ char capEst[4];
 time_t tiempo;
 struct tm *tlocal;
 char FechaHora[128];
+
 //Inicializacion de arreglo de ids de tickets de vehiculos
-int i;
-for (i = 0; i < 200; ++i)
-{
-	ids_vehiculos[i] = i+1;
-}
+int i =0;
+init();
+
+
 
 /////////////////////////////////////////////////////////
 /* se crea el socket */
@@ -76,7 +101,7 @@ printf("longitud del paquete en bytes: %d\n",numbytes);
 printf("el paquete contiene: %s\n", buf);
 strcpy(buf_copy, buf);
 strcpy(op, strtok(buf_copy, " "));//op contiene el caracter que nos dice 
-strcpy(id, strtok(buf_copy, "\n"));
+strcpy(id, strtok(NULL, "\n"));
 
 
 /* enviamos respuesta al cliente */
@@ -91,14 +116,21 @@ if (strcmp(op,"e") == 0)
 	  tiempo = time(0);
 	  tlocal = localtime(&tiempo);	  
 	  strftime(FechaHora,128,"%d/%m/%y %H:%M:%S",tlocal);//FechaHora contiene String con la fecha y hora actual local
+	  
+	  
+	  //Correspondencia Ticket-Vehiculo
 	  i = 0;
-	  //positivos indican que el id no ha sido asignado, negativo, ya fue asignado
-	  while(ids_vehiculos[i] < 0){ //Consigue el primer id que no ha sido asignado, esta en la pos i
+	  while( strcmp(tickets[i].placa,"$") != 0 ){ //Consigue el primer id que no ha sido asignado, esta en la pos i
 	  	i++;
 	  }
-	  sprintf(idTicket, "%d", ids_vehiculos[i]);
-	  ids_vehiculos[i] = (i+1)*-1;
-	  CAP_EST--;
+
+	  strcpy(tickets[i].placa, id);
+	  sprintf(idTicket, "%d", tickets[i].id_ticket);
+
+	  	imprimirTickets();
+	  	CAP_EST--;
+
+	  
 	  sprintf(capEst, "Puestos Disponibles: %d", CAP_EST);
 
 	  //Se carga mensaje a buffer:
@@ -115,7 +147,11 @@ if (strcmp(op,"e") == 0)
 	}
 }
 else{// hay q Verificar si alguien quiere salir pero hay full cap
-	CAP_EST++;
+	if (CAP_EST < 10)
+	{
+		CAP_EST++;
+	}
+	
 	sprintf(capEst, "Puestos Disponibles: %d", CAP_EST);
 	strcat(buf, capEst);
 	strcat(buf," ");
@@ -130,5 +166,6 @@ exit(2); }
 
 
 /* cerramos descriptor del socket */ 
+//imprimirTickets();
 close(sockfd);
 exit (0); }
