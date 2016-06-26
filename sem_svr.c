@@ -228,7 +228,7 @@ perror("bind");
 exit(2); }
 ///////////////////////////////////////////////////////////////
 
-listen(sockfd,10);
+//listen(sockfd,10);
 //Servidor se queda activo esperando que alguien se comunique con el
 while(1){
 		/* Se reciben los datos (directamente, UDP no necesita conexión) */
