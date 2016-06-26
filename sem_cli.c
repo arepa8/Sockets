@@ -13,6 +13,8 @@
 #include <sys/types.h>
 #include <stdio.h>
 #include <time.h>
+#include <math.h>
+
 
 #define SERVER_PORT 4321 
 #define BUFFER_LEN 1024
@@ -101,8 +103,8 @@ if ((numbytes = recvfrom(sockfd, buf, BUFFER_LEN, 0, (struct sockaddr *)&svr_add
 perror("recvfrom");
 exit(2);}
 
-printf("enviados %d bytes hacia %s\n",numbytes,inet_ntoa(svr_addr.sin_addr));
-printf("Respuesta del servidor: %s\n", buf);
+//printf("enviados %d bytes hacia %s\n",numbytes,inet_ntoa(svr_addr.sin_addr));
+printf("Respuesta del servidor:\n %s", buf);
 
 /* cierro socket */ 
 close(sockfd); 
