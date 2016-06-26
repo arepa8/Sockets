@@ -74,15 +74,15 @@ exit(1); }
 /* a donde mandar */
 svr_addr.sin_family = AF_INET; /* usa host byte order */ 
 svr_addr.sin_port = htons(portnum); /* usa network byte order */ 
-//svr_addr.sin_addr = *((struct in_addr *)host_name->h_addr); 
-bcopy((char *)host_name->h_addr, 
+svr_addr.sin_addr = *((struct in_addr *)host_name->h_addr); 
+/*bcopy((char *)host_name->h_addr, 
     (char *)&svr_addr.sin_addr.s_addr,  
-    host_name->h_length);
+    host_name->h_length);*/
 bzero(&(svr_addr.sin_zero), 8); /* pone en cero el resto */
 
 //Esto aqui intenta conectarse al servidor, si el servidor esta disponible funciona pepa
-if (connect(sockfd,(struct sockaddr *)&svr_addr,sizeof(svr_addr)) < 0) 
-    error("ERROR connecting");
+/*if (connect(sockfd,(struct sockaddr *)&svr_addr,sizeof(svr_addr)) < 0) 
+    error("ERROR connecting");*/
 
 
 /* enviamos info al servidor en el buffer*/
