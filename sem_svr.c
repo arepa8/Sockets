@@ -78,7 +78,7 @@ double montoAPagar(time_t hora_entrada, time_t hora_salida){
 
 char* solicitudCliente(char op[1], char id[20], char buf[BUFFER_LEN], int sockfd){
 	char idTicket[3];
-	char capEst[3];
+	char capEst[30];
 	time_t entrada;
 	time_t salida;
 	struct tm *tlocalentrada;
@@ -254,6 +254,7 @@ while(1){
 	memset(buf,'\0', BUFFER_LEN);//Se borra el buffer por si acaso habia algo antes q' fastidie
 
 	strcpy(buf, solicitudCliente(op, id, buf, sockfd));
+	printf("%s\n",buf);
 	//Envio de respuesta
 	if ((numbytes=sendto(sockfd,buf,strlen(buf),0,(struct sockaddr *)&their_addr, sizeof(struct sockaddr))) == -1) {
 	perror("sendto");

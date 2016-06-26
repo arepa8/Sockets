@@ -99,7 +99,7 @@ exit(1); }
 memset(buf,'\0', BUFFER_LEN);//Se borra el buffer por si acaso habia algo antes q' fastidie
 
 /* recibimos respuesta del servidor*/
-if ((numbytes = recvfrom(sockfd, buf, BUFFER_LEN, 0, (struct sockaddr *)&svr_addr,(socklen_t *)&addr_len)) < 0) { 
+if ((numbytes = recvfrom(sockfd, buf, sizeof(buf), 0, (struct sockaddr *)&svr_addr,(socklen_t *)&addr_len)) < 0) { 
 perror("recvfrom");
 exit(2);}
 
