@@ -156,9 +156,7 @@ char* solicitudCliente(char op[1], char id[20], char buf[BUFFER_LEN], int sockfd
 		//Obtencion de datos del ticket:
 		tlocalentrada = localtime(&tickets[pos].hora_entrada);
 		strftime(FechaHoraEntrada,128,"%d/%m/%y %H:%M:%S",tlocalentrada);
-		tickets[pos].hora_entrada = 0;
-		tickets[pos].hora_salida = 0;
-		strcpy(tickets[pos].placa,"$");
+
 
 		
 		strcat(buf,"Hora de Entrada: ");
@@ -180,6 +178,10 @@ char* solicitudCliente(char op[1], char id[20], char buf[BUFFER_LEN], int sockfd
 		strcat(buf,"\n");//fin del buffer	
 
 		
+		tickets[pos].hora_entrada = 0;
+		tickets[pos].hora_salida = 0;
+		strcpy(tickets[pos].placa,"$");
+
 
 
 
@@ -201,8 +203,8 @@ char buf[BUFFER_LEN]; /* Buffer de recepción */
 char op[1];
 char id[20];
 char buf_copy[BUFFER_LEN]; /* Copia Buffer de recepción que se modificara para leer la respuesta*/
-
-
+FILE *archivoEntradas;
+FILE *archivoSalidas;
 
 
 //Inicializacion de arreglo de ids de tickets de vehiculos
