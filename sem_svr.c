@@ -132,6 +132,10 @@ char* solicitudCliente(char op[1], char id[20], char buf[BUFFER_LEN], int sockfd
 
 				  break;
 		  	}
+		  	else if(strcmp(tickets[i].placa,id) == 0){
+		  		strcat(buf,"EL VEHICULO QUE INTENTA INGRESAR YA ESTA DENTRO DEL ESTACIONAMIENTO\n");
+		  		break;
+		  	}
 		  }
 		}
 		else{
@@ -142,7 +146,7 @@ char* solicitudCliente(char op[1], char id[20], char buf[BUFFER_LEN], int sockfd
 
 		}
 	}
-	else{// hay q Verificar si alguien quiere salir pero hay full cap
+	else{
 
 		  i = 0;
 		  for (i = 0; i < 200; i++)
@@ -193,7 +197,13 @@ char* solicitudCliente(char op[1], char id[20], char buf[BUFFER_LEN], int sockfd
 				  strcat(buf,"\nHASTA LUEGO. CONDUZCA CON CUIDADO\n");
 				  break;
 		  	}
-		  }	
+
+		  }
+		  if (i == 200)//el i llego a 200 sin encontrar a alguien con esta placa
+		  	{
+		  		strcat(buf,"EL VEHICULO NO SE ENCUENTRA DENTRO DEL ESTACIONAMIENTO\n");
+		  	
+		  	}	
 
 
 

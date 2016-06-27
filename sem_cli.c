@@ -424,7 +424,6 @@ bzero(&(svr_addr.sin_zero), 8); /* pone en cero el resto */
 /* enviamos info al servidor en el buffer*/
 memset(buf,'\0', BUFFER_LEN);
 sprintf(buf, "%s %s\n", oper, placa);
-printf("MANDARE ESTO AL SERV: %s\n",buf);
 if ((numbytes = sendto(sockfd,buf,sizeof(buf),0,(struct sockaddr *)&svr_addr, sizeof(struct sockaddr))) < 0) {
 perror("sendto");
 exit(1); }
@@ -436,7 +435,6 @@ memset(buf,'\0', BUFFER_LEN);//Se borra el buffer por si acaso habia algo antes 
 addr_len = sizeof(struct sockaddr);
 
 if ((numbytes = recvfrom(sockfd, buf,1024, 0, (struct sockaddr *)&svr_addr,(socklen_t *)&addr_len)) == -1) { 
-printf("%s\n", buf);
 perror("recvfrom");
 exit(1);}
 printf("Respuesta del servidor:\n %s", buf);

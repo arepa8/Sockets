@@ -1,0 +1,10 @@
+==================================================================
+Id Ticket: 3 | Id Vehiculo: 4568
+Fecha Entrada: 27/06/16 | Hora Entrada: 03:06:38
+Fecha Salida: 27/06/16 | Hora Salida: 03:06:41
+Monto a Pagar: 80.000000
+==================================================================
+Id Ticket: 0 | Id Vehiculo: 4568
+Fecha Entrada: 27/06/16 | Hora Entrada: 03:11:21
+Fecha Salida: 27/06/16 | Hora Salida: 03:11:30
+Monto a Pagar: 80.000000
