@@ -428,7 +428,7 @@ if ((numbytes = sendto(sockfd,buf,sizeof(buf),0,(struct sockaddr *)&svr_addr, si
 perror("sendto");
 exit(1); }
 
-
+int enviados = numbytes;
 memset(buf,'\0', BUFFER_LEN);//Se borra el buffer por si acaso habia algo antes q' fastidie
 
 /* recibimos respuesta del servidor */
@@ -439,7 +439,10 @@ perror("recvfrom");
 exit(1);}
 printf("Respuesta del servidor:\n %s", buf);
 
-
+if (enviados == numbytes)
+{
+	printf("\nLos datos fueron enviados satisfactoriamente.\n");
+}
 /* cierro socket */ 
 
 close(sockfd); 
