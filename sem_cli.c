@@ -2,7 +2,7 @@
 * PROYECTO SOCKETS REDES
 * Neylin Belisario  09-10093
 * Andres Hernandez  10-10353
-* Daniel Pelayo         10-10539
+* Daniel Pelayo     10-10539
 */
 #include <stdio.h> 
 #include <stdlib.h> 
