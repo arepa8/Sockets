@@ -1,7 +1,8 @@
 /*
-* Ejemplo de server de chat simple con datagramas (UDP). *
-* Leandro Lucarella - Copyleft 2004
-* Basado en otros ejemplos públicos. *
+* PROYECTO SOCKETS REDES
+* Neylin Belisario	09-10093
+* Andres Hernandez 	10-10353
+* Daniel Pelayo			10-10539
 */
 #include <stdio.h> 
 #include <stdlib.h> 
@@ -423,7 +424,7 @@ perror("socket");
 exit(1); }
 /* Se establece la estructura my_addr para luego llamar a bind() */ 
 my_addr.sin_family = AF_INET; /* usa host byte order */
-my_addr.sin_port = htons(SERVER_PORT); /* usa network byte order */ 
+my_addr.sin_port = htons(portnum); /* usa network byte order */ 
 my_addr.sin_addr.s_addr = INADDR_ANY; /* escuchamos en todas las IPs */ 
 bzero(&(my_addr.sin_zero), 8); /* rellena con ceros el resto de la estructura */
 /* Se le da un nombre al socket (se lo asocia al puerto e IPs) */ 
@@ -459,8 +460,8 @@ while(1){
 
 	/* Se procesa la peticion del cliente */
 	memset(buf,'\0', BUFFER_LEN);//Se borra el buffer por si acaso habia algo antes q' fastidie
-	archivoEntradas = fopen("entradas.txt","a");
-	archivoSalidas = fopen("salidas.txt","a");
+	archivoEntradas = fopen(bitacora_entrada,"a");
+	archivoSalidas = fopen(bitacora_salida,"a");
 	strcpy(buf, solicitudCliente(op, id, buf, sockfd, archivoEntradas, archivoSalidas));
 	//printf("%s\n",buf);
 	//Envio de respuesta

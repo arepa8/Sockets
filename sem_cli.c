@@ -1,7 +1,8 @@
 /*
-* Ejemplo de cliente de chat simple con datagramas (UDP). *
-* Leandro Lucarella - Copyleft 2004
-* Basado en diversos ejemplos públicos. *
+* PROYECTO SOCKETS REDES
+* Neylin Belisario  09-10093
+* Andres Hernandez  10-10353
+* Daniel Pelayo         10-10539
 */
 #include <stdio.h> 
 #include <stdlib.h> 
@@ -29,7 +30,7 @@ struct sockaddr_in svr_addr; /* almacenara la direccion IP y numero de puerto de
 struct hostent * host_name; /* para obtener nombre del host */
 int addr_len, numbytes; /* conteo de bytes a escribir */
 char oper[1];
-char placa[10];
+char placa[20];
 
 /*********************Verificacion de entrada*****************************/
 
