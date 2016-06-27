@@ -443,6 +443,10 @@ if (enviados == numbytes)
 {
 	printf("\nLos datos fueron enviados satisfactoriamente.\n");
 }
+else
+{
+    printf("\nLos datos NO fueron enviados satisfactoriamente. Intente de nuevo\n");
+}
 /* cierro socket */ 
 
 close(sockfd); 
