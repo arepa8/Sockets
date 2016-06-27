@@ -39,7 +39,7 @@ que le ingresan al hilo*/
 
 #define SERVER_PORT 20539 //Puerto a usar, esto habra q cambiarlo
 #define BUFFER_LEN 1024 //longitud del buffer de lectura
-int CAP_EST = 3;//Capacidad del estacionamiento
+int CAP_EST = 200;//Capacidad del estacionamiento
 carro tickets[200];
 
 
