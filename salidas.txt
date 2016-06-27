@@ -1,0 +1,9 @@
+Id Ticket: 0 | Id Vehiculo: 661113
+Fecha Entrada: 26/06/16 | Hora Entrada: 18:24:54
+Fecha Salida: 26/06/16 | Hora Salida: 18:25:08
+Monto a Pagar: 80.000000
+==================================================================
+Id Ticket: 1 | Id Vehiculo: 661112
+Fecha Entrada: 26/06/16 | Hora Entrada: 18:24:56
+Fecha Salida: 26/06/16 | Hora Salida: 18:26:36
+Monto a Pagar: 80.000000

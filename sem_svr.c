@@ -38,7 +38,7 @@ que le ingresan al hilo*/
 
 #define SERVER_PORT 20539 //Puerto a usar, esto habra q cambiarlo
 #define BUFFER_LEN 1024 //longitud del buffer de lectura
-int CAP_EST = 10;//Capacidad del estacionamiento
+int CAP_EST = 3;//Capacidad del estacionamiento
 carro tickets[200];
 
 
@@ -48,17 +48,23 @@ void init(){
 	{
 		strcpy(tickets[i].placa,"$");
 		tickets[i].id_ticket = i;
-		printf("Tiquet: %d Placa: %s \n",tickets[i].id_ticket,tickets[i].placa);
+		//printf("Ticket: %d Placa: %s \n",tickets[i].id_ticket,tickets[i].placa);
 	}
 }
 
 void imprimirTickets(){
 	int i = 0;
+	system("clear");
+	printf("Carros dentro del Estacionamiento: \n");
 	for ( i = 0; i < 200; ++i)
 	{
-		printf("Tiquet: %d Placa: %s \n",tickets[i].id_ticket,tickets[i].placa);
+		if (strcmp(tickets[i].placa,"$") != 0)
+		{
+			printf("Ticket: %d Placa: %s \n",tickets[i].id_ticket,tickets[i].placa);
+		}
 	}
 }
+
 
 double montoAPagar(time_t hora_entrada, time_t hora_salida){
 	double monto = 0;
@@ -76,9 +82,8 @@ double montoAPagar(time_t hora_entrada, time_t hora_salida){
 	return(monto);
 }
 
-char* solicitudCliente(char op[1], char id[20], char buf[BUFFER_LEN], int sockfd){
+char* solicitudCliente(char op[1], char id[20], char buf[BUFFER_LEN], int sockfd, FILE* entradas, FILE* salidas){
 	char idTicket[3];
-	char capEst[30];
 	time_t entrada;
 	time_t salida;
 	struct tm *tlocalentrada;
@@ -102,38 +107,42 @@ char* solicitudCliente(char op[1], char id[20], char buf[BUFFER_LEN], int sockfd
 		  		time(&entrada);
 		  		tlocalentrada = localtime(&entrada);	 
 		  		//FechaHora contiene String con la fecha y hora actual local 
-		  		strftime(FechaHoraEntrada,128,"%d/%m/%y %H:%M:%S",tlocalentrada);
+		  		strftime(FechaHoraEntrada,128,"Fecha Entrada: %d/%m/%y | Hora Entrada: %H:%M:%S",tlocalentrada);
 		  		strcpy(tickets[i].placa, id);
 				  sprintf(idTicket, "%d", tickets[i].id_ticket);
 				  tickets[i].hora_entrada = entrada;
-				  pos = i;
+				  //Se carga mensaje a buffer que es lo que se imprimira en el log:
+				  strcat(buf, "==================================================================\n");
+				  strcat(buf,"Id Ticket: ");
+					strcat(buf,idTicket);// Id del ticket
+					strcat(buf," | ");
+					strcat(buf, "Id Vehiculo: ");
+					strcat(buf, id);
+					strcat(buf,"\n");
+					strcat(buf,FechaHoraEntrada);// Si el vehiculo entrara o saldra
+					//fin del buffer	
+					fprintf(entradas, "%s\n", buf);
+					fclose(entradas);
+					imprimirTickets();//imprime el estado actual del estacionamiento en la pantalla del servidor
+				  CAP_EST--;
+
+				  //memset(buf,'\0', BUFFER_LEN);//Se borra el buffer por si acaso habia algo antes q' fastidie
+				  strcat(buf,"\nPUEDE PASAR, BIENVENIDOS\n");
+
 				  break;
 		  	}
 		  }
-	  	imprimirTickets();
-	  	CAP_EST--;
-
-		  
-		  sprintf(capEst, "Puestos Disponibles: %d", CAP_EST);
-
-		  //Se carga mensaje a buffer:
-			strcat(buf,FechaHoraEntrada);// Si el vehiculo entrara o saldra
-			strcat(buf," ");//separador
-			strcat(buf,idTicket);// Id del vehiculo
-			strcat(buf, "\n");
-			strcat(buf, capEst);
-			strcat(buf,"\n");//fin del buffer	  		
-
 		}
 		else{
-			strcat(buf,"leveee, el est esta full compai");
+
+		  memset(buf,'\0', BUFFER_LEN);//Se borra el buffer por si acaso habia algo antes q' fastidie
+		  strcat(buf,"NO PUEDE PASAR. ESTACIONAMIENTO LLENO\n");
+			imprimirTickets();
+
 		}
 	}
 	else{// hay q Verificar si alguien quiere salir pero hay full cap
-		if (CAP_EST < 10)
-		{
-			CAP_EST++;
-		}
+
 		  i = 0;
 		  for (i = 0; i < 200; i++)
 		  {
@@ -143,50 +152,48 @@ char* solicitudCliente(char op[1], char id[20], char buf[BUFFER_LEN], int sockfd
 		  		tlocalsalida = localtime(&salida);	 
 		  		//FechaHora contiene String con la fecha y hora actual local 
 		  		tickets[i].hora_salida = salida;
-		  		strftime(FechaHoraSalida,128,"%d/%m/%y %H:%M:%S",tlocalsalida);
-				  sprintf(idTicket, "%d", tickets[i].id_ticket);
+		  		strftime(FechaHoraSalida,128,"Fecha Salida: %d/%m/%y | Hora Salida: %H:%M:%S",tlocalsalida);
+
+					//Obtencion de datos del ticket:
+					tlocalentrada = localtime(&tickets[i].hora_entrada);
+		  		strftime(FechaHoraEntrada,128,"Fecha Entrada: %d/%m/%y | Hora Entrada: %H:%M:%S",tlocalentrada);
+		  		//Id Ticket
+		  		sprintf(idTicket, "%d", tickets[i].id_ticket);
+		  		//Calculo del monto a pagar:
 				  sprintf(tarifa, "%f", montoAPagar(tickets[i].hora_entrada,tickets[i].hora_salida));
-				  pos = i;
 
+					strcat(buf, "==================================================================\n");
+				  strcat(buf,"Id Ticket: ");
+					strcat(buf,idTicket);// Id del ticket
+					strcat(buf," | ");
+					strcat(buf, "Id Vehiculo: ");
+					strcat(buf, id);
+					strcat(buf,"\n");
+					strcat(buf,FechaHoraEntrada);// Si el vehiculo entrara o saldra
+					strcat(buf,"\n");
+					strcat(buf,FechaHoraSalida);// Si el vehiculo entrara o saldra
+					strcat(buf,"\n");
+					strcat(buf,"Monto a Pagar: ");//separador
+					strcat(buf,tarifa);// Id del vehiculo
 
+					fprintf(salidas, "%s\n", buf);
+					fclose(salidas);
+
+					tickets[i].hora_entrada = 0;
+					tickets[i].hora_salida = 0;
+					strcpy(tickets[i].placa,"$");
+					imprimirTickets();
+					if (CAP_EST < 200)
+					{
+						CAP_EST++;
+					}
+
+				  //memset(buf,'\0', BUFFER_LEN);//Se borra el buffer por si acaso habia algo antes q' fastidie
+				  strcat(buf,"\nHASTA LUEGO. CONDUZCA CON CUIDADO\n");
 				  break;
 		  	}
-		  }
+		  }	
 
-		//Obtencion de datos del ticket:
-		tlocalentrada = localtime(&tickets[pos].hora_entrada);
-		strftime(FechaHoraEntrada,128,"%d/%m/%y %H:%M:%S",tlocalentrada);
-
-
-		
-		strcat(buf,"Hora de Entrada: ");
-		strcat(buf,FechaHoraEntrada);// Hora Entrada
-		strcat(buf," ");//separador
-		strcat(buf,"Hora de Salida: ");
-		strcat(buf,FechaHoraSalida);// Hora Salida
-		strcat(buf,"\n");//separador
-		strcat(buf,"ID ticket: ");//separador
-		strcat(buf,idTicket);// Id del vehiculo
-		strcat(buf, "\n");
-		strcat(buf,"Monto a Pagar: ");//separador
-		strcat(buf,tarifa);// Id del vehiculo
-		strcat(buf, "\n");
-		sprintf(capEst, "Puestos Disponibles: %d", CAP_EST);
-		strcat(buf, capEst);
-		strcat(buf," ");
-		strcat(buf,"Hasta luego \n");
-		strcat(buf,"\n");//fin del buffer	
-
-		
-		tickets[pos].hora_entrada = 0;
-		tickets[pos].hora_salida = 0;
-		strcpy(tickets[pos].placa,"$");
-
-
-
-
-
-		imprimirTickets();
 
 	}
 
@@ -205,7 +212,130 @@ char id[20];
 char buf_copy[BUFFER_LEN]; /* Copia Buffer de recepción que se modificara para leer la respuesta*/
 FILE *archivoEntradas;
 FILE *archivoSalidas;
+char capEst[30];
 
+
+
+
+/*********************Verificacion de entrada*****************************/
+
+//Verificacion de numero de argumentos
+if (argc != 7) {
+	printf("Uso: %s -l <puerto_sem_svr> -i <bitacora_entrada> -o <bitacora_salida>\n", argv[0]);
+	exit(1); 
+}
+
+//Verificacion de Banderas en cualquier orden
+else if ( ((strcmp(argv[1],"-l") != 0) || (strcmp(argv[3],"-i") != 0) || (strcmp(argv[5],"-o") != 0)) &&
+		  ((strcmp(argv[1],"-l") != 0) || (strcmp(argv[5],"-i") != 0) || (strcmp(argv[3],"-o") != 0))	&&
+		  ((strcmp(argv[3],"-l") != 0) || (strcmp(argv[5],"-i") != 0) || (strcmp(argv[1],"-o") != 0)) && 
+		  ((strcmp(argv[3],"-l") != 0) || (strcmp(argv[1],"-i") != 0) || (strcmp(argv[5],"-o") != 0))	&& 
+		  ((strcmp(argv[5],"-l") != 0) || (strcmp(argv[1],"-i") != 0) || (strcmp(argv[3],"-o") != 0))	&& 
+		  ((strcmp(argv[5],"-l") != 0) || (strcmp(argv[3],"-i") != 0) || (strcmp(argv[1],"-o") != 0)) ){
+	fprintf(stderr,"Alguna bandera esta incorrecta\n");
+	fprintf(stderr,"Uso: %s -l <puerto_sem_svr> -i <bitacora_entrada> -o <bitacora_salida>\n", argv[0]);
+	exit(1); 
+}
+
+// Verificacion del flag -l
+else if( strcmp(argv[1],"-l") == 0 ){
+	//Verificacion del Puerto, (Numeros de puertos validos: 20539, 20353, 20093)
+	if ( (atoi(argv[2]) != 20539) && (atoi(argv[2]) != 20353) && (atoi(argv[2]) != 20093) )
+	{
+		fprintf(stderr,"ERROR, numero de puerto no valido\n");
+		exit(1);
+	}
+	//Verificacion del Puerto, (Num de cifras del puerto)
+	else if ( (strlen(argv[2]) != 5) )
+	{
+		fprintf(stderr,"ERROR, el puerto no es compatible\n");
+		exit(1);
+	}
+	
+}
+else if( strcmp(argv[3],"-l") == 0 ){
+	//Verificacion del Puerto, (Numeros de puertos validos: 20539, 20353, 20093)
+	if ( (atoi(argv[4]) != 20539) && (atoi(argv[4]) != 20353) && (atoi(argv[4]) != 20093) )
+	{
+		fprintf(stderr,"ERROR, numero de puerto no valido\n");
+		exit(1);
+	}
+	//Verificacion del Puerto, (Num de cifras del puerto)
+	else if ( (strlen(argv[4]) != 5) )
+	{
+		fprintf(stderr,"ERROR, el puerto no es compatible\n");
+		exit(1);
+	}
+}
+else if( strcmp(argv[5],"-l") == 0 ){
+	//Verificacion del Puerto, (Numeros de puertos validos: 20539, 20353, 20093)
+	if ( (atoi(argv[6]) != 20539) && (atoi(argv[6]) != 20353) && (atoi(argv[6]) != 20093) )
+	{
+		fprintf(stderr,"ERROR, numero de puerto no valido\n");
+		exit(1);
+	}
+	//Verificacion del Puerto, (Num de cifras del puerto)
+	else if ( (strlen(argv[6]) != 5) )
+	{
+		fprintf(stderr,"ERROR, el puerto no es compatible\n");
+		exit(1);
+	}
+
+}
+
+// Verificacion del flag -i
+else if( strcmp(argv[1],"-i") == 0 ){
+	if ( strcmp(argv[3],"-i") == 0  || strcmp(argv[5],"-i") == 0 )
+	{
+		fprintf(stderr,"ERROR, Uso incorrecto de las banderas\n");
+		fprintf(stderr,"Uso: %s -l <puerto_sem_svr> -i <bitacora_entrada> -o <bitacora_salida>\n", argv[0]);
+		exit(1);
+	}
+}
+else if( strcmp(argv[3],"-i") == 0 ){
+	if ( strcmp(argv[1],"-i") == 0  || strcmp(argv[5],"-i") == 0 )
+	{
+		fprintf(stderr,"ERROR, Uso incorrecto de las banderas\n");
+		fprintf(stderr,"Uso: %s -l <puerto_sem_svr> -i <bitacora_entrada> -o <bitacora_salida>\n", argv[0]);
+		exit(1);
+	}
+}
+else if( strcmp(argv[5],"-i") == 0 ){
+	if ( strcmp(argv[3],"-i") == 0  || strcmp(argv[1],"-i") == 0 )
+	{
+		fprintf(stderr,"ERROR, Uso incorrecto de las banderas\n");
+		fprintf(stderr,"Uso: %s -l <puerto_sem_svr> -i <bitacora_entrada> -o <bitacora_salida>\n", argv[0]);
+		exit(1);
+	}
+}
+
+// Verificacion del flag -o
+else if( strcmp(argv[1],"-o") == 0 ){
+	if ( strcmp(argv[3],"-o") == 0  || strcmp(argv[5],"-o") == 0 )
+	{
+		fprintf(stderr,"ERROR, Uso incorrecto de las banderas\n");
+		fprintf(stderr,"Uso: %s -l <puerto_sem_svr> -i <bitacora_entrada> -o <bitacora_salida>\n", argv[0]);
+		exit(1);
+	}
+}
+else if( strcmp(argv[3],"-o") == 0 ){
+	if ( strcmp(argv[1],"-o") == 0  || strcmp(argv[5],"-o") == 0 )
+	{
+		fprintf(stderr,"ERROR, Uso incorrecto de las banderas\n");
+		fprintf(stderr,"Uso: %s -l <puerto_sem_svr> -i <bitacora_entrada> -o <bitacora_salida>\n", argv[0]);
+		exit(1);
+	}
+}
+else if( strcmp(argv[5],"-o") == 0 ){
+	if ( strcmp(argv[3],"-o") == 0  || strcmp(argv[1],"-o") == 0 )
+	{
+		fprintf(stderr,"ERROR, Uso incorrecto de las banderas\n");
+		fprintf(stderr,"Uso: %s -l <puerto_sem_svr> -i <bitacora_entrada> -o <bitacora_salida>\n", argv[0]);
+		exit(1);
+	}
+}
+
+/**************************Fin revision entrada*************************/
 
 //Inicializacion de arreglo de ids de tickets de vehiculos
 int i =0;
@@ -225,6 +355,7 @@ my_addr.sin_addr.s_addr = INADDR_ANY; /* escuchamos en todas las IPs */
 bzero(&(my_addr.sin_zero), 8); /* rellena con ceros el resto de la estructura */
 /* Se le da un nombre al socket (se lo asocia al puerto e IPs) */ 
 printf("Asignado direccion al socket ....\n");
+imprimirTickets();
 if (bind(sockfd, (struct sockaddr *)&my_addr, sizeof(struct sockaddr)) < 0) {
 perror("bind");
 exit(2); }
@@ -235,7 +366,8 @@ exit(2); }
 while(1){
 		/* Se reciben los datos (directamente, UDP no necesita conexión) */
 	addr_len = sizeof(struct sockaddr);
-	printf("Esperando datos ....\n");
+  sprintf(capEst, "Puestos Disponibles: %d", CAP_EST);
+  printf("%s",capEst);
 	memset(buf,'\0', BUFFER_LEN);//Se borra el buffer por si acaso habia algo antes q' fastidie
 
 	//Recibiendo del cliente:
@@ -254,9 +386,10 @@ while(1){
 
 	/* Se procesa la peticion del cliente */
 	memset(buf,'\0', BUFFER_LEN);//Se borra el buffer por si acaso habia algo antes q' fastidie
-
-	strcpy(buf, solicitudCliente(op, id, buf, sockfd));
-	printf("%s\n",buf);
+	archivoEntradas = fopen("entradas.txt","a");
+	archivoSalidas = fopen("salidas.txt","a");
+	strcpy(buf, solicitudCliente(op, id, buf, sockfd, archivoEntradas, archivoSalidas));
+	//printf("%s\n",buf);
 	//Envio de respuesta
 	if ((numbytes=sendto(sockfd,buf,strlen(buf),0,(struct sockaddr *)&their_addr, sizeof(struct sockaddr))) == -1) {
 	perror("sendto");
