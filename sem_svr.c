@@ -179,11 +179,6 @@ char* solicitudCliente(char op[1], char id[20], char buf[BUFFER_LEN], int sockfd
 		strcat(buf,"Hasta luego \n");
 		strcat(buf,"\n");//fin del buffer	
 
-		
-
-
-
-
 		imprimirTickets();
 
 	}
@@ -205,6 +200,8 @@ char capEst[4];
 time_t tiempo;
 struct tm *tlocal;
 char FechaHora[128];
+int portnum;
+char bitacora_entrada[20], bitacora_salida[20];
 
 /*********************Verificacion de entrada*****************************/
 
@@ -215,108 +212,183 @@ if (argc != 7) {
 }
 
 //Verificacion de Banderas en cualquier orden
-else if ( (strcmp(argv[1],"-l") != 0) || (strcmp(argv[3],"-i") != 0) || (strcmp(argv[5],"-o") != 0) ||
-		  (strcmp(argv[1],"-l") != 0) || (strcmp(argv[5],"-i") != 0) || (strcmp(argv[3],"-o") != 0)	||
-		  (strcmp(argv[3],"-l") != 0) || (strcmp(argv[5],"-i") != 0) || (strcmp(argv[1],"-o") != 0)	|| 
-		  (strcmp(argv[3],"-l") != 0) || (strcmp(argv[1],"-i") != 0) || (strcmp(argv[5],"-o") != 0)	|| 
-		  (strcmp(argv[5],"-l") != 0) || (strcmp(argv[1],"-i") != 0) || (strcmp(argv[3],"-o") != 0)	|| 
-		  (strcmp(argv[5],"-l") != 0) || (strcmp(argv[3],"-i") != 0) || (strcmp(argv[1],"-o") != 0) ){
+else if ( ((strcmp(argv[1],"-l") != 0) || (strcmp(argv[3],"-i") != 0) || (strcmp(argv[5],"-o") != 0)) &&
+		  ((strcmp(argv[1],"-l") != 0) || (strcmp(argv[5],"-i") != 0) || (strcmp(argv[3],"-o") != 0)) &&
+		  ((strcmp(argv[3],"-l") != 0) || (strcmp(argv[5],"-i") != 0) || (strcmp(argv[1],"-o") != 0)) && 
+		  ((strcmp(argv[3],"-l") != 0) || (strcmp(argv[1],"-i") != 0) || (strcmp(argv[5],"-o") != 0)) && 
+		  ((strcmp(argv[5],"-l") != 0) || (strcmp(argv[1],"-i") != 0) || (strcmp(argv[3],"-o") != 0)) && 
+		  ((strcmp(argv[5],"-l") != 0) || (strcmp(argv[3],"-i") != 0) || (strcmp(argv[1],"-o") != 0)) ){
 	fprintf(stderr,"Alguna bandera esta incorrecta\n");
 	fprintf(stderr,"Uso: %s -l <puerto_sem_svr> -i <bitacora_entrada> -o <bitacora_salida>\n", argv[0]);
 	exit(1); 
 }
 
 // Verificacion del flag -l
-else if( strcmp(argv[1],"-l") = 0 ){
-	//Verificacion del Puerto, (Numeros de puertos validos: 20539, 20353, 20093)
-	if ( (atoi(argv[2]) != 20539) && (atoi(argv[2]) != 20353) && (atoi(argv[2]) != 20093) )
+if( strcmp(argv[1],"-l") == 0 )
+{
+	if ((strcmp(argv[3],"-l") == 0) || (strcmp(argv[5],"-l") == 0) )
+    {
+        fprintf(stderr,"ERROR, Uso incorrecto de las banderas\n");
+        fprintf(stderr,"Uso: %s -l <puerto_sem_svr> -i <bitacora_entrada> -o <bitacora_salida>\n", argv[0]);
+        exit(1);
+    }
+	else 
 	{
-		fprintf(stderr,"ERROR, numero de puerto no valido\n");
+		//Verificacion del Puerto, (Numeros de puertos validos: 20539, 20353, 20093)
+		if ( (atoi(argv[2]) != 20539) && (atoi(argv[2]) != 20353) && (atoi(argv[2]) != 20093) )
+		{
+			fprintf(stderr,"ERROR, numero de puerto no valido\n");
+			exit(1);
+		}
+		//Verificacion del Puerto, (Num de cifras del puerto)
+		else if ( (strlen(argv[2]) != 5) )
+		{
+			fprintf(stderr,"ERROR, el puerto no es compatible\n");
+			exit(1);
+		}
+		else if ((portnum = atoi(argv[2])) == 0) {
+            fprintf(stderr,"ERROR, almacenando el puerto\n");
+            exit(1);
+        }
 	}
-	//Verificacion del Puerto, (Num de cifras del puerto)
-	if ( (strlen(argv[2]) != 5) )
-	{
-		fprintf(stderr,"ERROR, el puerto no es compatible\n");
-	}
-	exit(1);
 }
-else if( strcmp(argv[3],"-l") = 0 ){
-	//Verificacion del Puerto, (Numeros de puertos validos: 20539, 20353, 20093)
-	if ( (atoi(argv[4]) != 20539) && (atoi(argv[4]) != 20353) && (atoi(argv[4]) != 20093) )
+else if( strcmp(argv[3],"-l") == 0 )
+{
+	if ((strcmp(argv[1],"-l") == 0) || (strcmp(argv[5],"-l") == 0) )
+    {
+        fprintf(stderr,"ERROR, Uso incorrecto de las banderas\n");
+        fprintf(stderr,"Uso: %s -l <puerto_sem_svr> -i <bitacora_entrada> -o <bitacora_salida>\n", argv[0]);
+        exit(1);
+    }
+	else 
 	{
-		fprintf(stderr,"ERROR, numero de puerto no valido\n");
+		//Verificacion del Puerto, (Numeros de puertos validos: 20539, 20353, 20093)
+		if ( (atoi(argv[4]) != 20539) && (atoi(argv[4]) != 20353) && (atoi(argv[4]) != 20093) )
+		{
+			fprintf(stderr,"ERROR, numero de puerto no valido\n");
+			exit(1);
+		}
+		//Verificacion del Puerto, (Num de cifras del puerto)
+		else if ( (strlen(argv[4]) != 5) )
+		{
+			fprintf(stderr,"ERROR, el puerto no es compatible\n");
+			exit(1);
+		}
+		else if ((portnum = atoi(argv[4])) == 0) {
+            fprintf(stderr,"ERROR, almacenando el puerto\n");
+            exit(1);
+        }
 	}
-	//Verificacion del Puerto, (Num de cifras del puerto)
-	if ( (strlen(argv[4]) != 5) )
-	{
-		fprintf(stderr,"ERROR, el puerto no es compatible\n");
-	}
-	exit(1);
 }
-else if( strcmp(argv[5],"-l") = 0 ){
-	//Verificacion del Puerto, (Numeros de puertos validos: 20539, 20353, 20093)
-	if ( (atoi(argv[6]) != 20539) && (atoi(argv[6]) != 20353) && (atoi(argv[6]) != 20093) )
+else if( strcmp(argv[5],"-l") == 0 )
+{
+	if ((strcmp(argv[1],"-l") == 0) || (strcmp(argv[3],"-l") == 0) )
+    {
+        fprintf(stderr,"ERROR, Uso incorrecto de las banderas\n");
+        fprintf(stderr,"Uso: %s -l <puerto_sem_svr> -i <bitacora_entrada> -o <bitacora_salida>\n", argv[0]);
+        exit(1);
+    }
+	else 
 	{
-		fprintf(stderr,"ERROR, numero de puerto no valido\n");
+		//Verificacion del Puerto, (Numeros de puertos validos: 20539, 20353, 20093)
+		if ( (atoi(argv[6]) != 20539) && (atoi(argv[6]) != 20353) && (atoi(argv[6]) != 20093) )
+		{
+			fprintf(stderr,"ERROR, numero de puerto no valido\n");
+			exit(1);
+		}
+		//Verificacion del Puerto, (Num de cifras del puerto)
+		else if ( (strlen(argv[6]) != 5) )
+		{
+			fprintf(stderr,"ERROR, el puerto no es compatible\n");
+			exit(1);
+		}
+		else if ((portnum = atoi(argv[6])) == 0) {
+            fprintf(stderr,"ERROR, almacenando el puerto\n");
+            exit(1);
+        }
 	}
-	//Verificacion del Puerto, (Num de cifras del puerto)
-	if ( (strlen(argv[6]) != 5) )
-	{
-		fprintf(stderr,"ERROR, el puerto no es compatible\n");
-	}
-	exit(1);
 }
 
 // Verificacion del flag -i
-else if( strcmp(argv[1],"-i") = 0 ){
-	if ( strcmp(argv[3],"-i") = 0  || strcmp(argv[5],"-i") = 0 )
+if( strcmp(argv[1],"-i") == 0 )
+{
+	if ( strcmp(argv[3],"-i") == 0  || strcmp(argv[5],"-i") == 0 )
 	{
 		fprintf(stderr,"ERROR, Uso incorrecto de las banderas\n");
 		fprintf(stderr,"Uso: %s -l <puerto_sem_svr> -i <bitacora_entrada> -o <bitacora_salida>\n", argv[0]);
 		exit(1);
 	}
+	else if ( strcpy(bitacora_entrada,argv[2]) ==  "\0" )
+    {
+        fprintf(stderr, "ERROR, almacenando la bitacora de entrada\n");
+    }
 }
-else if( strcmp(argv[3],"-i") = 0 ){
-	if ( strcmp(argv[1],"-i") = 0  || strcmp(argv[5],"-i") = 0 )
+else if( strcmp(argv[3],"-i") == 0 )
+{
+	if ( strcmp(argv[1],"-i") == 0  || strcmp(argv[5],"-i") == 0 )
 	{
 		fprintf(stderr,"ERROR, Uso incorrecto de las banderas\n");
 		fprintf(stderr,"Uso: %s -l <puerto_sem_svr> -i <bitacora_entrada> -o <bitacora_salida>\n", argv[0]);
 		exit(1);
 	}
+	else if ( strcpy(bitacora_entrada,argv[4]) ==  "\0" )
+    {
+        fprintf(stderr, "ERROR, almacenando la bitacora de entrada\n");
+    }
 }
-else if( strcmp(argv[5],"-i") = 0 ){
-	if ( strcmp(argv[3],"-i") = 0  || strcmp(argv[1],"-i") = 0 )
+else if( strcmp(argv[5],"-i") == 0 )
+{
+	if ( strcmp(argv[3],"-i") == 0  || strcmp(argv[1],"-i") == 0 )
 	{
 		fprintf(stderr,"ERROR, Uso incorrecto de las banderas\n");
 		fprintf(stderr,"Uso: %s -l <puerto_sem_svr> -i <bitacora_entrada> -o <bitacora_salida>\n", argv[0]);
 		exit(1);
 	}
+	else if ( strcpy(bitacora_entrada,argv[6]) ==  "\0" )
+    {
+        fprintf(stderr, "ERROR, almacenando la bitacora de entrada\n");
+    }
 }
 
 // Verificacion del flag -o
-else if( strcmp(argv[1],"-o") = 0 ){
-	if ( strcmp(argv[3],"-o") = 0  || strcmp(argv[5],"-o") = 0 )
+if( strcmp(argv[1],"-o") == 0 )
+{
+	if ( strcmp(argv[3],"-o") == 0  || strcmp(argv[5],"-o") == 0 )
 	{
 		fprintf(stderr,"ERROR, Uso incorrecto de las banderas\n");
 		fprintf(stderr,"Uso: %s -l <puerto_sem_svr> -i <bitacora_entrada> -o <bitacora_salida>\n", argv[0]);
 		exit(1);
 	}
+	else if ( strcpy(bitacora_salida,argv[2]) ==  "\0" )
+    {
+        fprintf(stderr, "ERROR, almacenando la bitacora de salida\n");
+    }
 }
-else if( strcmp(argv[3],"-o") = 0 ){
-	if ( strcmp(argv[1],"-o") = 0  || strcmp(argv[5],"-o") = 0 )
+else if( strcmp(argv[3],"-o") == 0 )
+{
+	if ( strcmp(argv[1],"-o") == 0  || strcmp(argv[5],"-o") == 0 )
 	{
 		fprintf(stderr,"ERROR, Uso incorrecto de las banderas\n");
 		fprintf(stderr,"Uso: %s -l <puerto_sem_svr> -i <bitacora_entrada> -o <bitacora_salida>\n", argv[0]);
 		exit(1);
 	}
+	else if ( strcpy(bitacora_salida,argv[4]) ==  "\0" )
+    {
+        fprintf(stderr, "ERROR, almacenando la bitacora de salida\n");
+    }
 }
-else if( strcmp(argv[5],"-o") = 0 ){
-	if ( strcmp(argv[3],"-o") = 0  || strcmp(argv[1],"-o") = 0 )
+else if( strcmp(argv[5],"-o") == 0 )
+{
+	if ( strcmp(argv[3],"-o") == 0  || strcmp(argv[1],"-o") == 0 )
 	{
 		fprintf(stderr,"ERROR, Uso incorrecto de las banderas\n");
 		fprintf(stderr,"Uso: %s -l <puerto_sem_svr> -i <bitacora_entrada> -o <bitacora_salida>\n", argv[0]);
 		exit(1);
 	}
+	else if ( strcpy(bitacora_salida,argv[6]) ==  "\0" )
+    {
+        fprintf(stderr, "ERROR, almacenando la bitacora de salida\n");
+    }
 }
 
 /**************************Fin revision entrada*************************/
