@@ -465,7 +465,7 @@ while(1){
 	strcpy(buf, solicitudCliente(op, id, buf, sockfd, archivoEntradas, archivoSalidas));
 	//printf("%s\n",buf);
 	//Envio de respuesta
-	if ((numbytes=sendto(sockfd,buf,strlen(buf),0,(struct sockaddr *)&their_addr, sizeof(struct sockaddr))) == -1) {
+	if ((numbytes=sendto(sockfd,buf,sizeof(buf),0,(struct sockaddr *)&their_addr, sizeof(struct sockaddr))) < 0) {
 	perror("sendto");
 	exit(2); }
 

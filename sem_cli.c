@@ -405,7 +405,6 @@ else if ( (strcmp(argv[7],"-i") == 0) )
 /*if (host_name == NULL) {
 perror("gethostbyname");
 exit(1); }*/
-
 //portnum = atoi(argv[4]);
 /* Creamos el socket */
 if ((sockfd = socket(AF_INET, SOCK_DGRAM, 0)) < 0) {
@@ -420,33 +419,31 @@ svr_addr.sin_addr = *((struct in_addr *)host_name->h_addr);
     host_name->h_length);*/
 bzero(&(svr_addr.sin_zero), 8); /* pone en cero el resto */
 
-//Esto aqui intenta conectarse al servidor, si el servidor esta disponible funciona pepa
-/*if (connect(sockfd,(struct sockaddr *)&svr_addr,sizeof(svr_addr)) < 0) 
-    error("ERROR connecting");*/
 
 
 /* enviamos info al servidor en el buffer*/
-memset(buf,'\0', BUFFER_LEN);//Se borra el buffer por si acaso habia algo antes q' fastidie
-strcat(buf,(oper));// Si el vehiculo entrara o saldra
-strcat(buf," ");//separador
-strcat(buf,(placa));// Id del vehiculo
-strcat(buf,"\n");//fin del buffer
-
-if ((numbytes = sendto(sockfd,buf,strlen(buf),0,(struct sockaddr *)&svr_addr, sizeof(struct sockaddr))) < 0) {
+memset(buf,'\0', BUFFER_LEN);
+sprintf(buf, "%s %s\n", oper, placa);
+printf("MANDARE ESTO AL SERV: %s\n",buf);
+if ((numbytes = sendto(sockfd,buf,sizeof(buf),0,(struct sockaddr *)&svr_addr, sizeof(struct sockaddr))) < 0) {
 perror("sendto");
 exit(1); }
 
+
 memset(buf,'\0', BUFFER_LEN);//Se borra el buffer por si acaso habia algo antes q' fastidie
 
-/* recibimos respuesta del servidor*/
-if ((numbytes = recvfrom(sockfd, buf, sizeof(buf), 0, (struct sockaddr *)&svr_addr,(socklen_t *)&addr_len)) < 0) { 
-perror("recvfrom");
-exit(2);}
+/* recibimos respuesta del servidor */
+addr_len = sizeof(struct sockaddr);
 
-//printf("enviados %d bytes hacia %s\n",numbytes,inet_ntoa(svr_addr.sin_addr));
+if ((numbytes = recvfrom(sockfd, buf,1024, 0, (struct sockaddr *)&svr_addr,(socklen_t *)&addr_len)) == -1) { 
+printf("%s\n", buf);
+perror("recvfrom");
+exit(1);}
 printf("Respuesta del servidor:\n %s", buf);
 
+
 /* cierro socket */ 
+
 close(sockfd); 
 exit (0);
 }
