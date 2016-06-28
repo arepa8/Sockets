@@ -1,0 +1,72 @@
+		*********************************************
+		*  Estacionamiento Centro Comercial Moriah  *
+		* 					    *
+		*  Autores: Neylin Belisario 09-10093	    *
+		*	    Daniel Pelayo    10-10539       *
+		*           Andres Hernandez 10-10353       *
+		*					    *
+		*  Laboratorio Redes de las Computadoras    *
+		*********************************************
+
+
+Esta aplicacion simula el sistema de estacionamiento del Centro Comercial Moriah.
+Implementado bajo la arquitectura Cliente/Servidor usando el protocolo UDP.
+
+El sistema está conformado por:
+
+- Makefile
+- sem_cli.c
+- sem_svr.c
+
+
+- Makefile
+
+ Compila todos los documentos a usar en la aplicacion.
+ Debe ser ejecutado con el comando "make" antes que cualquier comando a mencionar
+ en este documento.
+
+- El cliente (sem_cli.c) maneja la entrada de datos al sistema de estacionamientos.
+  
+ Para llamar al cliente se utiliza el siguiente comando:
+
+ ./sem_cli -d <dominio> -p <puerto> -c <operacion> -i <id_vehiculo>
+
+ <dominio>: dominio en formato IPv4 por el cual se va a conectar
+ <puerto>: numero de puerto remoto que atendera la llamada (20093, 20353, 20539)
+ <operacion>: entrada o salida del estacionamiento.
+ <id_vehiculo>: placa del vehiculo que va a entrar o salir del estacionamiento
+
+ El cliente esta en la capacidad de verificar los datos ingresados por el cliente para
+ que cumpla con enviar datos certeros. 
+
+NOTA: no importa el orden en que se coloquen las banderas
+
+- El servidor (sem_svr.c) maneja todo el proceso de negocio del sistema de estacionamientos
+  Está en la capacidad de recibir vehiculos, colocarle hora de entrada, asignar ticket
+  a los vehiculos que entran y cobrar a los vehiculos que salen del establecimiento.
+  Para cobranzas, la primera hora cuesta $80 y la fraccion (1 hora) cuesta $30.
+
+ Para llamar al servidor se utiliza el siguiente comando:
+ 
+ ./sem_svr -l <puerto> -i <bitacora_entrada> -o <bitacora_salida>
+
+ <puerto>: puerto por el cual se va a comunicar con el cliente
+ <bitacora_entrada>: archivo que maneja todos los logs de entrada
+ <bitacora_salida>: archivo que maneja todos los logs de salida
+
+ Las bitacoras seran almacenadas en la misma carpeta donde este el proyecto
+
+ La bitacora de entrada contiene:
+ - id ticket del estacionamiento
+ - id placa del vehiculo
+ - fecha de entrada
+ - hora de entrada
+
+La bitacora de salida contiene: 
+- id ticket del estacionamiento
+- id placa del vehiculo
+- fecha de salida
+- hora de salida
+- monto a pagar por la permanencia en el estacionamiento
+
+ NOTA: no importa el orden en que se coloquen las banderas.
