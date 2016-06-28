@@ -1,8 +1,0 @@
-Id Ticket: 0 | Id Vehiculo: 661113
-Fecha Entrada: 26/06/16 | Hora Entrada: 18:24:54
-==================================================================
-Id Ticket: 1 | Id Vehiculo: 661112
-Fecha Entrada: 26/06/16 | Hora Entrada: 18:24:56
-==================================================================
-Id Ticket: 2 | Id Vehiculo: 661111
-Fecha Entrada: 26/06/16 | Hora Entrada: 18:25:00

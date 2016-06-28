@@ -15,8 +15,10 @@
 #include <stdio.h>
 #include <time.h>
 #include <math.h>
+#include <pthread.h>
 
-
+#define SERVER_PORT 20539 //Puerto a usar, esto habra q cambiarlo
+#define BUFFER_LEN 1024 //longitud del buffer de lectura
 typedef struct
 {
   char placa[10];
@@ -27,20 +29,22 @@ typedef struct
 
 /*Estructura usada para los parametros
 que le ingresan al hilo*/
-/*typedef struct 
+typedef struct 
 {
   int sockfd;
   char op[1];
   char id[20];
   char buf[BUFFER_LEN];
-  struct carro *Tick;
+  FILE* entradas;
+  FILE* salidas;
+  struct sockaddr_in their_addr; 
 
-}DATOSHILOS;*/
+}DATOSHILOS;
 
-#define SERVER_PORT 20539 //Puerto a usar, esto habra q cambiarlo
-#define BUFFER_LEN 1024 //longitud del buffer de lectura
+
 int CAP_EST = 200;//Capacidad del estacionamiento
 carro tickets[200];
+int k = 0;
 
 
 void init(){
@@ -83,7 +87,161 @@ double montoAPagar(time_t hora_entrada, time_t hora_salida){
 	return(monto);
 }
 
-char* solicitudCliente(char op[1], char id[20], char buf[BUFFER_LEN], int sockfd, FILE* entradas, FILE* salidas){
+void *solicitudClienteHilos(void* estructura){
+	DATOSHILOS datos = *((DATOSHILOS*) estructura);
+	int sockfd = datos.sockfd;
+	char op[1];
+	strcpy(op,datos.op);
+	char id[20];
+	strcpy(id, datos.id);
+	char buf[BUFFER_LEN];
+	strcpy(buf, datos.buf);
+	FILE* entradas = datos.entradas;
+	FILE* salidas = datos.salidas;
+	struct sockaddr_in their_addr = datos.their_addr; 
+
+	int numbytes;
+//=============================
+	char idTicket[3];
+	time_t entrada;
+	time_t salida;
+	struct tm *tlocalentrada;
+	struct tm *tlocalsalida;
+	char FechaHoraEntrada[128];
+	char FechaHoraSalida[128];
+	char tarifa[20];
+	int i = 0;
+	int pos = 0;
+
+
+	strcpy(op, strtok(buf, " "));//op contiene el caracter que nos dice 
+	strcpy(id, strtok(NULL, "\n"));//id contiene el id del vehiculo q entrara o saldra
+	memset(buf,'\0', BUFFER_LEN);
+	if (strcmp(op,"e") == 0)
+	{
+		//Verificamos si hay puestos
+		if (CAP_EST > 0)
+		{  		  
+		  //Correspondencia Ticket-Vehiculo
+		  i = 0;
+		  for (i = 0; i < 200; ++i)
+		  {
+		  	if (strcmp(tickets[i].placa,"$") == 0)
+		  	{
+		  		time(&entrada);
+		  		tlocalentrada = localtime(&entrada);	 
+		  		//FechaHora contiene String con la fecha y hora actual local 
+		  		strftime(FechaHoraEntrada,128,"Fecha Entrada: %d/%m/%y | Hora Entrada: %H:%M:%S",tlocalentrada);
+		  		strcpy(tickets[i].placa, id);
+				  sprintf(idTicket, "%d", tickets[i].id_ticket);
+				  tickets[i].hora_entrada = entrada;
+				  //Se carga mensaje a buffer que es lo que se imprimira en el log:
+				  strcat(buf, "==================================================================\n");
+				  strcat(buf,"Id Ticket: ");
+					strcat(buf,idTicket);// Id del ticket
+					strcat(buf," | ");
+					strcat(buf, "Id Vehiculo: ");
+					strcat(buf, id);
+					strcat(buf,"\n");
+					strcat(buf,FechaHoraEntrada);// Si el vehiculo entrara o saldra
+					//fin del buffer	
+					fprintf(entradas, "%s\n", buf);
+					fclose(entradas);
+					imprimirTickets();//imprime el estado actual del estacionamiento en la pantalla del servidor
+				  CAP_EST--;
+
+				  //memset(buf,'\0', BUFFER_LEN);//Se borra el buffer por si acaso habia algo antes q' fastidie
+				  strcat(buf,"\nPUEDE PASAR, BIENVENIDOS\n");
+
+				  break;
+		  	}
+		  	else if(strcmp(tickets[i].placa,id) == 0){
+		  		strcat(buf,"EL VEHICULO QUE INTENTA INGRESAR YA ESTA DENTRO DEL ESTACIONAMIENTO\n");
+		  		break;
+		  	}
+		  }
+		}
+		else{
+
+		  memset(buf,'\0', BUFFER_LEN);//Se borra el buffer por si acaso habia algo antes q' fastidie
+		  strcat(buf,"NO PUEDE PASAR. ESTACIONAMIENTO LLENO\n");
+			imprimirTickets();
+
+		}
+	}
+	else{
+
+		  i = 0;
+		  for (i = 0; i < 200; i++)
+		  {
+		  	if (strcmp(tickets[i].placa,id) == 0)
+		  	{
+		  		salida = time(0);
+		  		tlocalsalida = localtime(&salida);	 
+		  		//FechaHora contiene String con la fecha y hora actual local 
+		  		tickets[i].hora_salida = salida;
+		  		strftime(FechaHoraSalida,128,"Fecha Salida: %d/%m/%y | Hora Salida: %H:%M:%S",tlocalsalida);
+
+					//Obtencion de datos del ticket:
+					tlocalentrada = localtime(&tickets[i].hora_entrada);
+		  		strftime(FechaHoraEntrada,128,"Fecha Entrada: %d/%m/%y | Hora Entrada: %H:%M:%S",tlocalentrada);
+		  		//Id Ticket
+		  		sprintf(idTicket, "%d", tickets[i].id_ticket);
+		  		//Calculo del monto a pagar:
+				  sprintf(tarifa, "%f", montoAPagar(tickets[i].hora_entrada,tickets[i].hora_salida));
+
+					strcat(buf, "==================================================================\n");
+				  strcat(buf,"Id Ticket: ");
+					strcat(buf,idTicket);// Id del ticket
+					strcat(buf," | ");
+					strcat(buf, "Id Vehiculo: ");
+					strcat(buf, id);
+					strcat(buf,"\n");
+					strcat(buf,FechaHoraEntrada);// Si el vehiculo entrara o saldra
+					strcat(buf,"\n");
+					strcat(buf,FechaHoraSalida);// Si el vehiculo entrara o saldra
+					strcat(buf,"\n");
+					strcat(buf,"Monto a Pagar: ");//separador
+					strcat(buf,tarifa);// Id del vehiculo
+
+					fprintf(salidas, "%s\n", buf);
+					fclose(salidas);
+
+					tickets[i].hora_entrada = 0;
+					tickets[i].hora_salida = 0;
+					strcpy(tickets[i].placa,"$");
+					imprimirTickets();
+					if (CAP_EST < 200)
+					{
+						CAP_EST++;
+					}
+
+				  //memset(buf,'\0', BUFFER_LEN);//Se borra el buffer por si acaso habia algo antes q' fastidie
+				  strcat(buf,"\nHASTA LUEGO. CONDUZCA CON CUIDADO\n");
+				  break;
+		  	}
+
+		  }
+		  if (i == 200)//el i llego a 200 sin encontrar a alguien con esta placa
+		  	{
+		  		strcat(buf,"EL VEHICULO NO SE ENCUENTRA DENTRO DEL ESTACIONAMIENTO\n");
+		  	}	
+
+
+
+
+	}
+
+	k--;
+	if ((numbytes=sendto(sockfd,buf,sizeof(buf),0,(struct sockaddr *)&their_addr, sizeof(struct sockaddr))) < 0) {
+	perror("sendto");
+	exit(2); }
+
+
+
+}
+
+/*char* solicitudCliente(char op[1], char id[20], char buf[BUFFER_LEN], int sockfd, FILE* entradas, FILE* salidas){
 	char idTicket[3];
 	time_t entrada;
 	time_t salida;
@@ -211,7 +369,7 @@ char* solicitudCliente(char op[1], char id[20], char buf[BUFFER_LEN], int sockfd
 	}
 
 	return buf;
-}
+}*/
 
 int main(int argc, char *argv[]) {
 
@@ -444,9 +602,12 @@ if (bind(sockfd, (struct sockaddr *)&my_addr, sizeof(struct sockaddr)) < 0) {
 perror("bind");
 exit(2); }
 ///////////////////////////////////////////////////////////////
+pthread_t *thread_id;//Arreglo de hilos
+thread_id = malloc(3*(sizeof(pthread_t)));//3 hilos maximo
 
 //listen(sockfd,10);
 //Servidor se queda activo esperando que alguien se comunique con el
+DATOSHILOS argumentos[3];
 while(1){
 		/* Se reciben los datos (directamente, UDP no necesita conexión) */
 	addr_len = sizeof(struct sockaddr);
@@ -469,15 +630,31 @@ while(1){
 
 
 	/* Se procesa la peticion del cliente */
-	memset(buf,'\0', BUFFER_LEN);//Se borra el buffer por si acaso habia algo antes q' fastidie
+	//memset(buf,'\0', BUFFER_LEN);//Se borra el buffer por si acaso habia algo antes q' fastidie
 	archivoEntradas = fopen(bitacora_entrada,"a");
 	archivoSalidas = fopen(bitacora_salida,"a");
-	strcpy(buf, solicitudCliente(op, id, buf, sockfd, archivoEntradas, archivoSalidas));
-	//printf("%s\n",buf);
-	//Envio de respuesta
-	if ((numbytes=sendto(sockfd,buf,sizeof(buf),0,(struct sockaddr *)&their_addr, sizeof(struct sockaddr))) < 0) {
-	perror("sendto");
-	exit(2); }
+
+  argumentos[k].sockfd = sockfd;
+  strcpy(argumentos[k].buf,buf);
+  argumentos[k].entradas = archivoEntradas;
+  argumentos[k].salidas = archivoSalidas;
+  argumentos[k].their_addr = their_addr;
+  if (k < 3)
+  {
+		if (pthread_create(&thread_id[k],NULL,solicitudClienteHilos,(void *)&argumentos[k]) < 0) {
+			perror("Fallo el enlace");
+			return 1;
+		}
+		pthread_detach(thread_id[k]); 
+		k++;
+  }
+  else{
+  	strcat(buf,"alcanzado limite de procesos concurrentos");
+		if ((numbytes=sendto(sockfd,buf,sizeof(buf),0,(struct sockaddr *)&their_addr, sizeof(struct sockaddr))) < 0) {
+		perror("sendto");
+		exit(2); }
+	  }
+
 
 }
 
