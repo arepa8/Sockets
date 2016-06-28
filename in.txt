@@ -28,3 +28,27 @@ Fecha Entrada: 27/06/16 | Hora Entrada: 22:48:02
 ==================================================================
 Id Ticket: 0 | Id Vehiculo: 4
 Fecha Entrada: 27/06/16 | Hora Entrada: 22:49:09
+==================================================================
+Id Ticket: 0 | Id Vehiculo: 4
+Fecha Entrada: 27/06/16 | Hora Entrada: 23:13:11
+==================================================================
+Id Ticket: 1 | Id Vehiculo: 2
+Fecha Entrada: 27/06/16 | Hora Entrada: 23:13:13
+==================================================================
+Id Ticket: 2 | Id Vehiculo: 3
+Fecha Entrada: 27/06/16 | Hora Entrada: 23:13:14
+==================================================================
+Id Ticket: 0 | Id Vehiculo: 4
+Fecha Entrada: 27/06/16 | Hora Entrada: 23:15:42
+==================================================================
+Id Ticket: 1 | Id Vehiculo: 2
+Fecha Entrada: 27/06/16 | Hora Entrada: 23:15:44
+==================================================================
+Id Ticket: 2 | Id Vehiculo: 5
+Fecha Entrada: 27/06/16 | Hora Entrada: 23:15:48
+==================================================================
+Id Ticket: 3 | Id Vehiculo: 6
+Fecha Entrada: 27/06/16 | Hora Entrada: 23:15:49
+==================================================================
+Id Ticket: 4 | Id Vehiculo: 7
+Fecha Entrada: 27/06/16 | Hora Entrada: 23:15:50

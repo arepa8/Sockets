@@ -602,12 +602,11 @@ if (bind(sockfd, (struct sockaddr *)&my_addr, sizeof(struct sockaddr)) < 0) {
 perror("bind");
 exit(2); }
 ///////////////////////////////////////////////////////////////
-pthread_t *thread_id;//Arreglo de hilos
-thread_id = malloc(3*(sizeof(pthread_t)));//3 hilos maximo
+pthread_t thread_id;//Arreglo de hilos
 
 //listen(sockfd,10);
 //Servidor se queda activo esperando que alguien se comunique con el
-DATOSHILOS argumentos[3];
+DATOSHILOS argumentos;
 while(1){
 		/* Se reciben los datos (directamente, UDP no necesita conexión) */
 	addr_len = sizeof(struct sockaddr);
@@ -634,18 +633,18 @@ while(1){
 	archivoEntradas = fopen(bitacora_entrada,"a");
 	archivoSalidas = fopen(bitacora_salida,"a");
 
-  argumentos[k].sockfd = sockfd;
-  strcpy(argumentos[k].buf,buf);
-  argumentos[k].entradas = archivoEntradas;
-  argumentos[k].salidas = archivoSalidas;
-  argumentos[k].their_addr = their_addr;
+  argumentos.sockfd = sockfd;
+  strcpy(argumentos.buf,buf);
+  argumentos.entradas = archivoEntradas;
+  argumentos.salidas = archivoSalidas;
+  argumentos.their_addr = their_addr;
   if (k < 3)
   {
-		if (pthread_create(&thread_id[k],NULL,solicitudClienteHilos,(void *)&argumentos[k]) < 0) {
+		if (pthread_create(&thread_id,NULL,solicitudClienteHilos,(void *)&argumentos) < 0) {
 			perror("Fallo el enlace");
 			return 1;
 		}
-		pthread_detach(thread_id[k]); 
+		pthread_detach(thread_id); 
 		k++;
   }
   else{
