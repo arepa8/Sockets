@@ -12,6 +12,7 @@
 #include <netdb.h> 
 #include <arpa/inet.h> 
 #include <sys/types.h>
+#include <sys/socket.h>
 #include <stdio.h>
 #include <time.h>
 #include <math.h>
@@ -19,6 +20,7 @@
 
 #define SERVER_PORT 4321 
 #define BUFFER_LEN 1024
+#define MAXWAIT 4
 
 int main(int argc, char *argv[]) {
 
@@ -31,6 +33,7 @@ struct hostent * host_name; /* para obtener nombre del host */
 int addr_len, numbytes; /* conteo de bytes a escribir */
 char oper[1];
 char placa[20];
+struct timeval wait;
 
 /*********************Verificacion de entrada*****************************/
 
@@ -410,6 +413,16 @@ exit(1); }*/
 if ((sockfd = socket(AF_INET, SOCK_DGRAM, 0)) < 0) {
 perror("socket");
 exit(1); }
+
+wait.tv_sec = MAXWAIT;
+wait.tv_usec= 0;
+
+if (setsockopt(sockfd, SOL_SOCKET, SO_RCVTIMEO, &wait, sizeof(wait))==-1) 
+{
+perror("Falla al asignar tiempo maximo de espera por Socket\n");
+exit(1);
+}
+
 /* a donde mandar */
 svr_addr.sin_family = AF_INET; /* usa host byte order */ 
 svr_addr.sin_port = htons(portnum); /* usa network byte order */ 
